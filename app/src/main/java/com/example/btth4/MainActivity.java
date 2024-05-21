@@ -74,7 +74,7 @@ public class MainActivity extends AppCompatActivity {
             String sisoStr = edtSiSo.getText().toString();
             ContentValues myValue = new ContentValues();
             int siso;
-            String msg = "";
+            String msg;
             //kiểm tra các dữ liệu có trống hay không
             if (malop.isEmpty() || tenlop.isEmpty() || sisoStr.isEmpty()) {
                 msg = "Vui lòng điền đầy đủ thông tin.";
@@ -160,16 +160,23 @@ public class MainActivity extends AppCompatActivity {
                 Toast.makeText(MainActivity.this, msg, Toast.LENGTH_SHORT).show();
                 return;
             }
-            //kiểm tra dữ liệu có bị trùng hay không
-            Cursor cursor = myDatabase.query("tbllop", new String[]{"malop"}, "malop = ?", new String[]{malop}, null, null, null);
+            // Kiểm tra dữ liệu có bị trùng hay không
+            Cursor cursor = myDatabase.query("tbllop", new String[]{"tenlop", "siso"}, "malop = ?", new String[]{malop}, null, null, null);
             if (cursor.moveToFirst()) {
-                msg = "Mã lớp đã tồn tại.";
-                Toast.makeText(MainActivity.this, msg, Toast.LENGTH_SHORT).show();
-                cursor.close();
-                return;
+                String existingTenlop = cursor.getString(cursor.getColumnIndexOrThrow("tenlop"));
+                int existingSiso = cursor.getInt(cursor.getColumnIndexOrThrow("siso"));
+                if (existingTenlop.equals(tenlop) && existingSiso == siso) {
+                    msg = "Dữ liệu mới giống dữ liệu cũ, không thực hiện việc cập nhật.";
+                    Toast.makeText(MainActivity.this, msg, Toast.LENGTH_SHORT).show();
+                    cursor.close();
+                    return;
+                }
             }
+            cursor.close();
             //thêm dữ liệu vào database
             ContentValues myValue = new ContentValues();
+            myValue.put("malop", malop);
+            myValue.put("tenlop", tenlop);
             myValue.put("siso", siso);
             int n = myDatabase.update("tbllop", myValue, "malop = ?", new String[]{malop});
             if(n == 0) {
