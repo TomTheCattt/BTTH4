@@ -76,6 +76,30 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View v) {
                 String malop = edtMaLop.getText().toString();
                 int n = myDatabase.delete("tbllop", "malop = ?", new String[]{malop});
+                String msg = "";
+                if(n == 0) {
+                    msg = "No record to delete";
+                } else {
+                    msg = n + " record deleted";
+                }
+                Toast.makeText(MainActivity.this, msg, Toast.LENGTH_SHORT).show();
+            }
+        });
+        btnUpdate.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                String malop = edtMaLop.getText().toString();
+                int siso = Integer.parseInt(edtSiSo.getText().toString());
+                ContentValues myValue = new ContentValues();
+                myValue.put("siso", siso);
+                int n = myDatabase.update("tbllop", myValue, "malop = ?", new String[]{malop});
+                String msg = "";
+                if(n == 0) {
+                    msg = "No record to update";
+                } else {
+                    msg = n + " record updated";
+                }
+                Toast.makeText(MainActivity.this, msg, Toast.LENGTH_SHORT).show();
             }
         });
     }
