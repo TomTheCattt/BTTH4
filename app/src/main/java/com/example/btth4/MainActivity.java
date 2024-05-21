@@ -1,6 +1,7 @@
 package com.example.btth4;
 
 import android.content.ContentValues;
+import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.util.Log;
@@ -28,6 +29,20 @@ public class MainActivity extends AppCompatActivity {
     ArrayAdapter<String> myAdapter;
     SQLiteDatabase myDatabase;
 
+    protected void getData() {
+        myList.clear();
+        Cursor c = myDatabase.query("tbllop", null, null, null, null, null, null);
+        c.moveToNext();
+        String data = "";
+        while (c.isAfterLast() == false) {
+            data = c.getString(0) + " - " + c.getString(1) + " - " + c.getString(2);
+            c.moveToNext();
+            myList.add(data);
+        }
+        c.close();
+        myAdapter.notifyDataSetChanged();
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -51,6 +66,8 @@ public class MainActivity extends AppCompatActivity {
             Log.e("Error", "Table da ton tai");
         }
 
+        getData();
+
         btnInsert.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -68,6 +85,10 @@ public class MainActivity extends AppCompatActivity {
                     msg = "Insert record successfully!";
                 }
                 Toast.makeText(MainActivity.this, msg, Toast.LENGTH_SHORT).show();
+                edtMaLop.setText("");
+                edtTenLop.setText("");
+                edtSiSo.setText("");
+                getData();
             }
         });
 
@@ -83,6 +104,10 @@ public class MainActivity extends AppCompatActivity {
                     msg = n + " record deleted";
                 }
                 Toast.makeText(MainActivity.this, msg, Toast.LENGTH_SHORT).show();
+                edtMaLop.setText("");
+                edtTenLop.setText("");
+                edtSiSo.setText("");
+                getData();
             }
         });
         btnUpdate.setOnClickListener(new View.OnClickListener() {
@@ -100,6 +125,10 @@ public class MainActivity extends AppCompatActivity {
                     msg = n + " record updated";
                 }
                 Toast.makeText(MainActivity.this, msg, Toast.LENGTH_SHORT).show();
+                edtMaLop.setText("");
+                edtTenLop.setText("");
+                edtSiSo.setText("");
+                getData();
             }
         });
     }
