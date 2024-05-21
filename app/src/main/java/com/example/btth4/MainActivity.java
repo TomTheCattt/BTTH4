@@ -134,9 +134,11 @@ public class MainActivity extends AppCompatActivity {
                 msg = n + " lớp đã được xoá.";
             }
             Toast.makeText(MainActivity.this, msg, Toast.LENGTH_SHORT).show();
+            //đặt lại giá trị cho EditText
             edtMaLop.setText("");
             edtTenLop.setText("");
             edtSiSo.setText("");
+            //cập nhật lại dữ liệu
             getData();
         });
         btnUpdate.setOnClickListener(v -> {
