@@ -5,6 +5,8 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
@@ -66,6 +68,21 @@ public class MainActivity extends AppCompatActivity {
         }
 
         getData();
+
+        //chọn item
+        lv.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                // Lấy dữ liệu của item được chọn
+                String selectedItem = myList.get(position);
+                // Tách dữ liệu thành các thành phần malop, tenlop, siso
+                String[] parts = selectedItem.split(" - ");
+                // Đặt các giá trị vào EditText
+                edtMaLop.setText(parts[0]);
+                edtTenLop.setText(parts[1]);
+                edtSiSo.setText(parts[2]);
+            }
+        });
 
         btnInsert.setOnClickListener(v -> {
             //khai báo các biến để lấy dữ liệu
