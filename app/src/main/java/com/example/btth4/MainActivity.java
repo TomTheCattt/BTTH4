@@ -5,7 +5,6 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
@@ -14,9 +13,6 @@ import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.graphics.Insets;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsCompat;
 
 import java.util.ArrayList;
 
@@ -30,16 +26,19 @@ public class MainActivity extends AppCompatActivity {
     SQLiteDatabase myDatabase;
 
     protected void getData() {
+        //làm mới bảng hiển thị dữ liệu
         myList.clear();
+        //truy vấn để lấy dữ liệu từ bảng
         Cursor c = myDatabase.query("tbllop", null, null, null, null, null, null);
         c.moveToNext();
-        String data = "";
-        while (c.isAfterLast() == false) {
+        String data;
+        while (!c.isAfterLast()) {
             data = c.getString(0) + " - " + c.getString(1) + " - " + c.getString(2);
             c.moveToNext();
             myList.add(data);
         }
         c.close();
+        //gửi thông báo có sự thay đổi dữ liệu
         myAdapter.notifyDataSetChanged();
     }
 
@@ -63,73 +62,128 @@ public class MainActivity extends AppCompatActivity {
             String sql = "Create table tbllop(malop TEXT primary key, tenlop TEXT, siso INTEGER)";
             myDatabase.execSQL(sql);
         } catch (Exception e) {
-            Log.e("Error", "Table da ton tai");
+            Log.e("Error", "Bảng đã tồn tại");
         }
 
         getData();
 
-        btnInsert.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                String malop = edtMaLop.getText().toString();
-                String tenlop = edtTenLop.getText().toString();
-                int siso = Integer.parseInt(edtSiSo.getText().toString());
-                ContentValues myValue = new ContentValues();
-                myValue.put("malop", malop);
-                myValue.put("tenlop", tenlop);
-                myValue.put("siso", siso);
-                String msg = "";
-                if(myDatabase.insert("tbllop", null, myValue) == -1) {
-                    msg = "Failed to insert record!";
-                } else {
-                    msg = "Insert record successfully!";
-                }
+        btnInsert.setOnClickListener(v -> {
+            //khai báo các biến để lấy dữ liệu
+            String malop = edtMaLop.getText().toString();
+            String tenlop = edtTenLop.getText().toString();
+            String sisoStr = edtSiSo.getText().toString();
+            ContentValues myValue = new ContentValues();
+            int siso;
+            String msg = "";
+            //kiểm tra các dữ liệu có trống hay không
+            if (malop.isEmpty() || tenlop.isEmpty() || sisoStr.isEmpty()) {
+                msg = "Vui lòng điền đầy đủ thông tin.";
                 Toast.makeText(MainActivity.this, msg, Toast.LENGTH_SHORT).show();
-                edtMaLop.setText("");
-                edtTenLop.setText("");
-                edtSiSo.setText("");
-                getData();
+                return;
             }
+            //validate trường sĩ số có đúng kiểu int hay không
+            try {
+                siso = Integer.parseInt(sisoStr);
+            } catch (NumberFormatException e) {
+                msg = "Nhập sai dữ liệu sĩ số.";
+                Toast.makeText(MainActivity.this, msg, Toast.LENGTH_SHORT).show();
+                return;
+            }
+            //kiểm tra dữ liệu có trùng hay không
+            Cursor cursor = myDatabase.query("tbllop", new String[]{"malop"}, "malop = ?", new String[]{malop}, null, null, null);
+            if (cursor.moveToFirst()) {
+                msg = "Mã lớp đã tồn tại.";
+                Toast.makeText(MainActivity.this, msg, Toast.LENGTH_SHORT).show();
+                cursor.close();
+                return;
+            }
+            cursor.close();
+            //thêm dữ liệu vào myValue
+            myValue.put("malop", malop);
+            myValue.put("tenlop", tenlop);
+            myValue.put("siso", siso);
+            //thêm dữ liệu vào database
+            if(myDatabase.insert("tbllop", null, myValue) == -1) {
+                msg = "Thêm dữ liệu thất bại.";
+            } else {
+                msg = "Thêm dữ liệu thành công!";
+            }
+            //Hiển thị thông báo
+            Toast.makeText(MainActivity.this, msg, Toast.LENGTH_SHORT).show();
+            //đặt lại các giá trị cho EditText
+            edtMaLop.setText("");
+            edtTenLop.setText("");
+            edtSiSo.setText("");
+            //Cập nhật lại bảng
+            getData();
         });
 
-        btnDelete.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                String malop = edtMaLop.getText().toString();
-                int n = myDatabase.delete("tbllop", "malop = ?", new String[]{malop});
-                String msg = "";
-                if(n == 0) {
-                    msg = "No record to delete";
-                } else {
-                    msg = n + " record deleted";
-                }
+        btnDelete.setOnClickListener(v -> {
+            //khai báo các biến để lấy dữ liệu
+            String malop = edtMaLop.getText().toString();
+            String msg;
+            if (malop.isEmpty()) {
+                msg = "Vui lòng điền mã lớp.";
                 Toast.makeText(MainActivity.this, msg, Toast.LENGTH_SHORT).show();
-                edtMaLop.setText("");
-                edtTenLop.setText("");
-                edtSiSo.setText("");
-                getData();
+                return;
             }
+            int n = myDatabase.delete("tbllop", "malop = ?", new String[]{malop});
+            if(n == 0) {
+                msg = "Không có mã lớp cần xoá.";
+            } else {
+                msg = n + " lớp đã được xoá.";
+            }
+            Toast.makeText(MainActivity.this, msg, Toast.LENGTH_SHORT).show();
+            edtMaLop.setText("");
+            edtTenLop.setText("");
+            edtSiSo.setText("");
+            getData();
         });
-        btnUpdate.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                String malop = edtMaLop.getText().toString();
-                int siso = Integer.parseInt(edtSiSo.getText().toString());
-                ContentValues myValue = new ContentValues();
-                myValue.put("siso", siso);
-                int n = myDatabase.update("tbllop", myValue, "malop = ?", new String[]{malop});
-                String msg = "";
-                if(n == 0) {
-                    msg = "No record to update";
-                } else {
-                    msg = n + " record updated";
-                }
+        btnUpdate.setOnClickListener(v -> {
+            //khai báo các biến để lấy dữ liệu
+            String malop = edtMaLop.getText().toString();
+            String tenlop = edtTenLop.getText().toString();
+            String sisoStr = edtSiSo.getText().toString();
+            int siso;
+            String msg;
+            //kiểm tra các dữ liệu có trống hay không
+            if (malop.isEmpty() || tenlop.isEmpty() || sisoStr.isEmpty()) {
+                msg = "Vui lòng điền đầy đủ thông tin.";
                 Toast.makeText(MainActivity.this, msg, Toast.LENGTH_SHORT).show();
-                edtMaLop.setText("");
-                edtTenLop.setText("");
-                edtSiSo.setText("");
-                getData();
+                return;
             }
+            //validate trường sĩ số có đúng kiểu int hay không
+            try {
+                siso = Integer.parseInt(sisoStr);
+            } catch (NumberFormatException e) {
+                msg = "Nhập sai dữ liệu sĩ số.";
+                Toast.makeText(MainActivity.this, msg, Toast.LENGTH_SHORT).show();
+                return;
+            }
+            //kiểm tra dữ liệu có bị trùng hay không
+            Cursor cursor = myDatabase.query("tbllop", new String[]{"malop"}, "malop = ?", new String[]{malop}, null, null, null);
+            if (cursor.moveToFirst()) {
+                msg = "Mã lớp đã tồn tại.";
+                Toast.makeText(MainActivity.this, msg, Toast.LENGTH_SHORT).show();
+                cursor.close();
+                return;
+            }
+            //thêm dữ liệu vào database
+            ContentValues myValue = new ContentValues();
+            myValue.put("siso", siso);
+            int n = myDatabase.update("tbllop", myValue, "malop = ?", new String[]{malop});
+            if(n == 0) {
+                msg = "Không có dữ liệu nào được cập nhật.";
+            } else {
+                msg = n + " dữ liệu đã được cập nhật.";
+            }
+            Toast.makeText(MainActivity.this, msg, Toast.LENGTH_SHORT).show();
+            //đặt lại các giá trị cho EditText
+            edtMaLop.setText("");
+            edtTenLop.setText("");
+            edtSiSo.setText("");
+            //Cập nhật lại giá trị cho bảng
+            getData();
         });
     }
 }
