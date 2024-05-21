@@ -85,7 +85,7 @@ public class MainActivity extends AppCompatActivity {
             try {
                 siso = Integer.parseInt(sisoStr);
             } catch (NumberFormatException e) {
-                msg = "Nhập sai dữ liệu sĩ số.";
+                msg = "Sĩ số phải là số nguyên.";
                 Toast.makeText(MainActivity.this, msg, Toast.LENGTH_SHORT).show();
                 return;
             }
@@ -158,7 +158,7 @@ public class MainActivity extends AppCompatActivity {
             try {
                 siso = Integer.parseInt(sisoStr);
             } catch (NumberFormatException e) {
-                msg = "Nhập sai dữ liệu sĩ số.";
+                msg = "Sĩ số phải là số nguyên.";
                 Toast.makeText(MainActivity.this, msg, Toast.LENGTH_SHORT).show();
                 return;
             }
